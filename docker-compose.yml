@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL para Kong
+  kong-database:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    volumes:
+      - kong-database-data:/var/lib/postgresql/data
+    networks:
+      - kong-network
+
+  # Servicio de Kong
+  kong:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PASSWORD: kong
+      KONG_PG_USER: kong
+      KONG_PG_DATABASE: kong
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"     # Puerto de la API pública (HTTP)
+      - "8443:8443"     # Puerto de la API pública (HTTPS)
+      - "8001:8001"     # Admin API (HTTP)
+      - "8444:8444"     # Admin API (HTTPS)
+    depends_on:
+      - kong-database
+    networks:
+      - kong-network
+
+  # Servicio opcional de Konga (dashboard de Kong)
+  konga:
+    image: pantsel/konga
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "1337:1337"
+    networks:
+      - kong-network
+
+volumes:
+  kong-database-data:
+
+networks:
+  kong-network:
+    driver: bridge
