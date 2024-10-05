@@ -44,6 +44,32 @@ services:
     networks:
       - kong-network
 
+  # Servicio Spring Boot
+  spring-boot-service:
+    build:
+      context: /home/estudiante/bazarte_back/Bazarte/Componente Gestión Operativa Emprendedores  # Ruta al Dockerfile del backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - kong-network
+    depends_on:
+      - kong
+
+  # Servicio Frontend (desarrollo)
+  frontend:
+    build:
+      context: /home/estudiante/bazarte_front/BazarteFront # Ajusta la ruta según tu estructura
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200" # Mapea el puerto 4200 del contenedor al 4200 del host
+    networks:
+      - kong-network
+    volumes:
+      - .:/app # Permite que los cambios en el código local se reflejen en el contenedor
+    stdin_open: true
+    tty: true
+
 volumes:
   kong-database-data:
 
